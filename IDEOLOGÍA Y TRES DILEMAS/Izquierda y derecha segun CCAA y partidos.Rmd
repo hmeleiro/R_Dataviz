@@ -1,0 +1,269 @@
+
+
+```{r include=FALSE}
+library(haven)
+library(tidyverse)
+library(scales)
+library(labelled)
+
+
+CIS_26J <- read_sav("~/Dropbox/MASTER/DATOS/MATRICES/MD3145 POSTELECTORAL GENERALES 26J/EDAD AGRUPADA Y RECUERDO RECOD.sav")
+
+```
+
+
+```{r include=FALSE}
+IZQ_DER <- CIS_26J %>% select(CCAA, RECUERDO16, P12, P13, P14, P35)
+
+IZQ_DERE_LIBE_SEG <- CIS_26J %>% select(CCAA, RECUERDO16, P12, P13, P14, P35)
+
+IZQ_DER$RECUERDO16 <- to_factor(IZQ_DER$RECUERDO16)
+IZQ_DER$CCAA <- to_factor(IZQ_DER$CCAA)
+IZQ_DER$P12 <- as.numeric(IZQ_DER$P12)
+IZQ_DER$P13 <- as.numeric(IZQ_DER$P13)
+IZQ_DER$P14 <- as.numeric(IZQ_DER$P14)
+IZQ_DER$P35 <- as.numeric(IZQ_DER$P35)
+
+IZQ_DERE_LIBE_SEG$P12 <-  as.numeric(IZQ_DERE_LIBE_SEG$P12)
+IZQ_DERE_LIBE_SEG$P13 <-  as.numeric(IZQ_DERE_LIBE_SEG$P13)
+IZQ_DERE_LIBE_SEG$P14 <-  as.numeric(IZQ_DERE_LIBE_SEG$P14)
+IZQ_DERE_LIBE_SEG$P35 <- as.numeric(IZQ_DERE_LIBE_SEG$P35)
+IZQ_DERE_LIBE_SEG$RECUERDO16_ <- to_factor(IZQ_DERE_LIBE_SEG$RECUERDO16)
+IZQ_DERE_LIBE_SEG$RECUERDO16 <- as.numeric(IZQ_DERE_LIBE_SEG$RECUERDO16)
+
+
+colores.partidos <- c("blue", "red", "purple", "orange", "purple","purple" , "green", "green", "purple", "green")
+
+
+
+```
+
+
+```{r include=FALSE}
+IZQ_DER <- gather(data = IZQ_DER, key = "Pregunta", value = "Observacion", P12:P14, factor_key = TRUE)
+```
+
+
+```{r include=FALSE}
+attach(IZQ_DER)
+IZQ_DER$P <- as.character(Pregunta)
+IZQ_DER$P[Pregunta == "P12"] <- "La diversidad cultural es positiva o un peligro"
+IZQ_DER$P[Pregunta == "P13"] <- "Mejores servicios públicos o menos impuestos"
+IZQ_DER$P[Pregunta == "P14"] <- "Más libertad o más seguridad"
+IZQ_DER$SIMPLES <- as.numeric(Observacion)
+
+IZQ_DER$P[Pregunta == "P34"] <- "Ideologia"
+
+IZQ_DER$SIMPLES[Observacion < 5 & Pregunta == "P12"] <- "La diversidad cultural es más bien positiva"
+IZQ_DER$SIMPLES[Observacion == 5 & Pregunta == "P12"] <- "La diversidad cultural es a la vez positiva y peligrosa"
+IZQ_DER$SIMPLES[Observacion > 5 & Pregunta == "P12"] <- "La diversidad cultural es más bien peligrosa"
+
+IZQ_DER$SIMPLES[Observacion < 5 & Pregunta == "P13"] <- "Mejores SSPP aunque haya que pagar más impuestos"
+IZQ_DER$SIMPLES[Observacion == 5 & Pregunta == "P13"] <- "Ni muchos impuestos ni menos SSPP"
+IZQ_DER$SIMPLES[Observacion > 5 & Pregunta == "P13"] <- "Pagar menos impuestos aunque eso signifique peores SSPP"
+
+IZQ_DER$SIMPLES[Observacion < 5 & Pregunta == "P14"] <- "Máxima libertad aunque eso signifique menos seguridad"
+IZQ_DER$SIMPLES[Observacion == 5 & Pregunta == "P14"] <- "Equilibrio entre libertad y seguridad"
+IZQ_DER$SIMPLES[Observacion > 5 & Pregunta == "P14"] <- "Máxima seguridad aunque eso signifique menos libertad"
+IZQ_DER$SIMPLES[Observacion > 11] <- "NS/NC"
+
+
+IZQ_DER$CCAA <- as.character(IZQ_DER$CCAA)
+IZQ_DER$CCAA[CCAA == "Madrid (Comunidad de)"] <- "Comunidad de \nMadrid"
+IZQ_DER$CCAA[CCAA == "Asturias (Principado de)"] <- "Asturias"
+IZQ_DER$CCAA[CCAA == "Navarra (Comunidad Foral de)"] <- "Navarra"
+IZQ_DER$CCAA[CCAA == "Rioja (La)"] <- "La Rioja"
+IZQ_DER$CCAA[CCAA == "Balears (Illes)"] <- "Baleares"
+IZQ_DER$CCAA[CCAA == "Murcia (Región de)"] <- "Región de \nMurcia"
+
+IZQ_DER$RECUERDO16 <- as.character(IZQ_DER$RECUERDO16)
+IZQ_DER$RECUERDO16[IZQ_DER$RECUERDO16 == "Compromís-Podemos-EUPV"] <- "Compromís"
+
+IZQ_DER$RECUERDO16 <- factor(IZQ_DER$RECUERDO16, levels = c("PP", "PSOE", "Unidos Podemos", "C's", "En Comú Podem","Compromís", "En Marea", "ERC", "CDC", "EAJ-PNV"))
+
+
+detach(IZQ_DER)
+
+IZQ_DER$SIMPLES <- factor(IZQ_DER$SIMPLES, levels = c("La diversidad cultural es más bien positiva", "La diversidad cultural es a la vez positiva y peligrosa", "La diversidad cultural es más bien peligrosa", "Mejores SSPP aunque haya que pagar más impuestos", "Ni muchos impuestos ni menos SSPP", "Pagar menos impuestos aunque eso signifique peores SSPP", "Máxima libertad aunque eso signifique menos seguridad", "Equilibrio entre libertad y seguridad", "Máxima seguridad aunque eso signifique menos libertad", "NS/NC"))
+
+```
+
+
+
+
+```{r echo=FALSE, fig.width=10}
+IZQ_DER_plot_CCAA <- ggplot(subset(IZQ_DER, Observacion < 11 & CCAA != "Ceuta (Ciudad autónoma de)" & CCAA != "Melilla (Ciudad autónoma de)"), mapping = aes(x = Observacion, group = P))
+IZQ_DER_plot_CCAA + 
+  geom_line(stat = "density", aes(color = P)) + 
+  facet_wrap(~CCAA) + 
+  labs(color = NULL) + 
+  scale_x_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10))
+  
+```
+
+
+
+```{r echo=FALSE, fig.width=10}
+IZQ_DER_plot_RECUERDO <- ggplot(subset(IZQ_DER, Observacion < 11 & RECUERDO16 != "N.C." & RECUERDO16 != "No votó" & RECUERDO16 != "En blanco" & RECUERDO16 != "Voto nulo" & RECUERDO16 != "Otro"), mapping = aes(x = Observacion, group = P))
+IZQ_DER_plot_RECUERDO + 
+  geom_vline(xintercept = 5, alpha = 0.7)  +
+  geom_line(stat = "density", aes(color = P)) + 
+  facet_wrap(~RECUERDO16) + 
+  scale_x_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10))
+  labs(color = NULL)
+```
+
+
+```{r echo=FALSE, fig.width=10}
+
+IZQ_DER_pct_RECUERDO <- IZQ_DER %>% group_by(RECUERDO16, P, SIMPLES) %>% summarise(N = n()) %>% mutate(pct = N/sum(N))
+
+IZQ_DER_pct_RECUERDO_P12 <- ggplot(subset(IZQ_DER_pct_RECUERDO, P == "La diversidad cultural es positiva o un peligro" & SIMPLES != "NS/NC" & RECUERDO16 != "N.C." & RECUERDO16 != "No votó" & RECUERDO16 != "En blanco" & RECUERDO16 != "Voto nulo" & RECUERDO16 != "Otro"), mapping = aes(x = SIMPLES, y = pct))
+
+IZQ_DER_pct_RECUERDO_P12 + geom_col(aes(fill= SIMPLES))+ 
+  facet_wrap(~RECUERDO16) + 
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) + 
+  labs(title = "Dilema diversidad cultural", x = NULL, fill = NULL) +
+  scale_y_continuous(labels = percent) +
+  scale_fill_brewer(type = "qual", palette = 2, direction = -1)
+
+
+IZQ_DER_pct_RECUERDO_P13 <- ggplot(subset(IZQ_DER_pct_RECUERDO, P == "Mejores servicios públicos o menos impuestos" & SIMPLES != "NS/NC" & RECUERDO16 != "N.C." & RECUERDO16 != "No votó" & RECUERDO16 != "En blanco" & RECUERDO16 != "Voto nulo" & RECUERDO16 != "Otro"), mapping = aes(x = SIMPLES, y = pct))
+
+IZQ_DER_pct_RECUERDO_P13 + geom_col(aes(fill= SIMPLES))+ 
+  facet_wrap(~RECUERDO16) + 
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) + 
+  labs(title = "Dilema Impuestos-servicios públicos", x = NULL, fill = NULL) +
+  scale_y_continuous(labels = percent) +
+  scale_fill_brewer(type = "qual", palette = 2, direction = -1)
+
+
+IZQ_DER_pct_RECUERDO_P14 <- ggplot(subset(IZQ_DER_pct_RECUERDO, P == "Más libertad o más seguridad" & SIMPLES != "NS/NC" & RECUERDO16 != "N.C." & RECUERDO16 != "No votó" & RECUERDO16 != "En blanco" & RECUERDO16 != "Voto nulo" & RECUERDO16 != "Otro"), mapping = aes(x = SIMPLES, y = pct))
+
+IZQ_DER_pct_RECUERDO_P14 + geom_col(aes(fill= SIMPLES))+ 
+  facet_wrap(~RECUERDO16) + 
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) + 
+  labs(title = "Dilema libertad-seguridad", x = NULL, fill = NULL) +
+  scale_y_continuous(labels = percent) +
+  scale_fill_brewer(type = "qual", palette = 2, direction = -1)
+
+```
+
+```{r fig.height=5, fig.width=15}
+
+colores.4partidos <- c("blue", "red", "purple", "orange")
+
+IZQ_DER_IDEO_PARTIDOS <- ggplot(subset(IZQ_DER, Observacion < 11 & P35 < 11 & RECUERDO16 %in% c("PP", "PSOE", "Unidos Podemos", "C's")), mapping = aes(x = Observacion, group = RECUERDO16))
+
+IZQ_DER_IDEO_PARTIDOS + 
+  geom_vline(xintercept = 5, alpha = 0.7)  + 
+  geom_line(stat = "density", aes(color = RECUERDO16)) + 
+  facet_wrap(~P) +
+  scale_x_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10)) + 
+  labs(x = "Escala del 0 - 10", color = NULL) + 
+  theme(legend.position = "right", strip.text = element_text(size = 12)) + 
+  guides(color = guide_legend(ncol = 1)) + 
+  scale_color_manual(values = colores.4partidos)
+```
+
+
+
+
+##La diversidad cultural es positiva o peligrosa.
+
+Consenso amplio en todas las CCAA sobre la aceptación de la diversidad cultural.
+
+
+```{r echo=FALSE, fig.width=10}
+IZQ_DER_pct_CCAA <- IZQ_DER %>% group_by(CCAA, P, SIMPLES) %>% summarise(N = n()) %>% mutate(pct = N/sum(N))
+
+IZQ_DER_pct_CCAA_P12 <- ggplot(subset(IZQ_DER_pct_CCAA, P == "La diversidad cultural es positiva o un peligro" & SIMPLES != "NS/NC" & CCAA != "Ceuta (Ciudad autónoma de)" & CCAA != "Melilla (Ciudad autónoma de)"), mapping = aes(x = SIMPLES, y = pct))
+IZQ_DER_pct_CCAA_P12 + geom_col(aes(fill = SIMPLES)) + 
+  facet_wrap(~CCAA) + 
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) + 
+  labs(title = "Diversidad cultural", x = NULL, fill = NULL) +
+  scale_y_continuous(labels = percent) +
+  scale_fill_brewer(type = "qual", palette = 2, direction = -1)
+```
+
+
+##Impuestos y servicios públicos
+Consenso amplio sobre la preferencia de pagar más impuestos para disfrutar mejores servicios públicos.
+
+
+```{r echo=FALSE, fig.width=10}
+
+IZQ_DER_pct_CCAA_P13 <- ggplot(subset(IZQ_DER_pct_CCAA, P == "Mejores servicios públicos o menos impuestos" & SIMPLES != "NS/NC" & CCAA != "Ceuta (Ciudad autónoma de)" & CCAA != "Melilla (Ciudad autónoma de)"), mapping = aes(x = SIMPLES, y = pct))
+IZQ_DER_pct_CCAA_P13 + geom_col(aes(fill = SIMPLES)) + 
+  facet_wrap(~CCAA) + 
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) + 
+  labs(title = "Impuestos y servicios públicos", x = NULL, fill = NULL) +
+  scale_y_continuous(labels = percent) +
+  scale_fill_brewer(type = "qual", palette = 2, direction = -1)
+```
+
+
+
+##Libertad y seguridad
+En este dilema sí que se observan diferencias entre CCAA. Existe una mayoría de CCAA donde hay más personas que priorizan la seguridad sobre la libertad que al contrario (La Rioja, Baleares, Andalucía, Aragón, Castilla y León, Castilla La Mancha, Extremadura, Canarias, Comunitat Valenciana). Luego hay otras donde el porcentaje de personas que apoyan una y otra cosa está más o menos empatado (Cantabria, Navarra, Comunidad de Madrid). País Vasco y en menor medida Asturias son los dos únicos casos donde quienes prefieren más libertad, aunque eso signifique menos seguridad, son claramente más que quienes prefieren lo contrario. 
+
+
+```{r echo=FALSE, fig.width=10}
+
+IZQ_DER_pct_CCAA_P14 <- ggplot(subset(IZQ_DER_pct_CCAA, P == "Más libertad o más seguridad" & SIMPLES != "NS/NC" & CCAA != "Ceuta (Ciudad autónoma de)" & CCAA != "Melilla (Ciudad autónoma de)"), mapping = aes(x = SIMPLES, y = pct))
+IZQ_DER_pct_CCAA_P14 + geom_col(aes(fill = SIMPLES)) + 
+  facet_wrap(~CCAA) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) + 
+  labs(title = "Dilema libertad-seguridad", x = NULL, fill = NULL) +
+  scale_y_continuous(labels = percent) +
+  scale_fill_brewer(type = "qual", palette = 2, direction = -1)
+```
+
+
+
+
+```{r echo=FALSE, fig.height=9, fig.width=10}
+
+
+IZQ_DER_PLOT_IDEO.P14 <- ggplot(subset(IZQ_DERE_LIBE_SEG, P35 < 11 & P14 < 11 & RECUERDO16 < 25), mapping = aes(x = P35, y = P14))
+IZQ_DER_PLOT_IDEO.P14 + geom_jitter(alpha = 0.3, aes(color = RECUERDO16_)) + geom_hline(yintercept = 5, alpha = 0.7) + geom_vline(xintercept = 5.5, alpha = 0.7)   + geom_smooth(color = "black") + scale_color_manual(values = colores.partidos) +labs(title = "Dilema libertad-seguridad e ideología", subtitle = "¿Prefiere maximizar la libertad aunque ello conlleve una pérdida de seguridad \no prefiere maximizar la seguridad aunque eso signifique menos libertad", x = "Eje izquierda - derecha", y = "Escala del 0 - 10", color = NULL) + theme(legend.position = "right") + scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9,10)) + scale_y_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10)) + expand_limits(y = 0:10)
+
+
+
+```
+
+```{r echo=FALSE, fig.height=9, fig.width=10}
+IZQ_DER_PLOT_IDEO.P12 <- ggplot(subset(IZQ_DERE_LIBE_SEG, P35 < 11 & P12 < 11 & RECUERDO16 < 25), mapping = aes(x = P35, y = P12))
+IZQ_DER_PLOT_IDEO.P12 + geom_jitter(alpha = 0.3, aes(color = RECUERDO16_)) + geom_hline(yintercept = 5, alpha = 0.7) + geom_vline(xintercept = 5.5, alpha = 0.7)   + geom_smooth(color = "black") + scale_color_manual(values = colores.partidos) +labs(title = "Diversidad cultural e ideología", subtitle = "¿La diversida cultural es algo positivo o es peligroso", x = "Eje izquierda - derecha", y = "Escala del 0 - 10", color = NULL) + theme(legend.position = "right") + scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9,10)) + scale_y_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10)) + expand_limits(y = 0:10)
+```
+
+
+
+```{r echo=FALSE, fig.height=9, fig.width=10}
+IZQ_DER_PLOT_IDEO.P13 <- ggplot(subset(IZQ_DERE_LIBE_SEG, P35 < 11 & P12 < 11 & RECUERDO16 < 25), mapping = aes(x = P35, y = P12))
+IZQ_DER_PLOT_IDEO.P13 + geom_jitter(alpha = 0.3, aes(color = RECUERDO16_)) + geom_hline(yintercept = 5, alpha = 0.7) + geom_vline(xintercept = 5.5, alpha = 0.7)   + geom_smooth(color = "black") + scale_color_manual(values = colores.partidos) +labs(title = "Dilema impuestos-servicios públicos e ideología", subtitle = "Prefiere mejores servicios públicos aunque eso signifique pagar más impuestos \no prefiere pagar menos impuestos aunque ello conlleve peores servicios públicos", x = "Eje izquierda - derecha", y = "Escala del 0 - 10", color = NULL) + theme(legend.position = "right") + scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9,10)) + scale_y_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10)) + expand_limits(y = 0:10)
+```
+
+
+
+##CONCLUSIONES
+
+Los tres dilemas (diversidad cultural, libertad-seguridad y impuestos-servicios públicos) corelacionan ligeramente con el eje izquierda-derecha. El más claro es el dilema libertad-seguridad: la izquierda tiende priorizar la libertad y la derecha la seguridad. El relacionado con los servicios públicos y los impuestos es el que menos corelaciona, lo que significa que existe un consenso bastante amplio en torno a la preferencia de pagar más servicios públicos si eso supone mejores SSPP (Estado del Bienestar).
+
+
+
+```{r echo=FALSE, fig.height=6, fig.width=10}
+
+IZQ_DER_IDEO_1 <- ggplot(subset(IZQ_DER, Observacion < 11 & P35 < 11), mapping = aes(x = P35 , group = Pregunta, y = Observacion))
+
+IZQ_DER_IDEO_1 + geom_hline(yintercept = 5, alpha = 0.7) + 
+  geom_vline(xintercept = 5.5, alpha = 0.7)  + 
+  geom_smooth(aes(color = P)) + 
+  scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9,10)) + 
+  scale_y_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10)) + 
+  expand_limits(y = 0:10) + labs(x = "Eje izquierda - derecha", y = "Escala del 0 - 10", color = NULL) + 
+  theme(legend.position = "right") + 
+  guides(color = guide_legend(ncol = 1)) + 
+  scale_color_brewer(type = "qual", palette = 2)
+```
+
