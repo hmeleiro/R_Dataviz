@@ -18,7 +18,7 @@ library(labelled)
 
 load("/Users/HECTOR/Dropbox/MASTER/DATOS/R/IMPUESTOS/DATA.RData")
 
-CIS_JUL16 <- read_sav("/Users/HECTOR/Dropbox/MASTER/DATOS/MATRICES/MD3146 BAROMETRO JULIO 16/CIS_JULIO_16.sav")
+CIS_JUL16 <- read_sav("https://github.com/meneos/R_Dataviz/blob/master/PERCEPCIONES%20SOBRE%20IMPUESTOS/DATA.RData?raw=true")
 
 CIS_JUL16$RECUERDO_ <- to_factor(CIS_JUL16$RECUERDO)
 CIS_JUL16$P45_ <- as.numeric(CIS_JUL16$P45)
