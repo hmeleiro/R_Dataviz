@@ -1,0 +1,144 @@
+---
+title: "Percepciones sobre la política fiscal en España"
+author: "Héctor Meleiro"
+date: "16/10/2017"
+output:
+  pdf_document: default
+  html_document:
+    fig_caption: yes
+    fig_height: 8
+    fig_width: 10
+---
+
+
+```{r}
+library(tidyverse)
+library(scales)
+library(labelled)
+
+load("/Users/HECTOR/Dropbox/MASTER/DATOS/R/IMPUESTOS/DATA.RData")
+
+CIS_JUL16 <- read_sav("/Users/HECTOR/Dropbox/MASTER/DATOS/MATRICES/MD3146 BAROMETRO JULIO 16/CIS_JULIO_16.sav")
+
+CIS_JUL16$RECUERDO_ <- to_factor(CIS_JUL16$RECUERDO)
+CIS_JUL16$P45_ <- as.numeric(CIS_JUL16$P45)
+CIS_JUL16$P17_ <- as.numeric(CIS_JUL16$P17)
+
+coloresPARTIDOS <- 
+
+
+```
+
+
+
+
+####El dilema impuestos-servicios públicos
+
+<div style="text-align: justify">
+En España existe un consenso amplio y transversal en términos ideológicos en torno Estado del bienestar como agente que proporciona servicios públicos a cambio de impuestos. En una escala del 0 al 10, en la que el 0 significa que es preferible mejorar los servicios públicos aunque haya que pagar más impuestos y 10 significa lo contrario, los españoles se sitúan en una media de 4,08, es decir más cerca de la primera afirmación que de la segunda aunque muy cerca del 5 que sería el punto medio de la escala. Esto significa que los españoles están dispuestos, en general, a pagar más impuestos si a cambio reciben mejores servicios públicos.</div>
+
+<div style="text-align: justify">Como observamos en el siguiente gráfico, esta preferencia es transversal en términos ideológicos, aunque disminuye ligeramente el apoyo a esta afirmación entre las personas autoubicadas a la derecha del eje ideológico.</div>
+
+
+
+
+```{r Pagar impuestos a cambio de SSPP, echo=FALSE, fig.height=9, fig.width=9}
+
+IMPUES.IDEO <- ggplot(subset(CIS_JUL16, P45 < 11 & P17 < 11), mapping = aes(x = P45_, y = P17_))
+
+IMPUES.IDEO + geom_hline(yintercept = 5, color = "gray70") + geom_vline(xintercept = 5.5, color = "gray70") + geom_jitter(alpha = 0.3, aes(color = RECUERDO_)) + geom_smooth(method = "lm") + scale_y_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10), labels = c("Mejorar servicios públicos \naunque haya que pagar \nmás impuestos", "1","2","3","4","5","6","7","8","9","Pagar menos impuestos \naunque haya que reducir \nservicios públicos"), name = NULL) + scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9,10), name = "Eje izquierda - derecha (1-10)") + scale_color_manual(values = coloresPARTIDOS) + labs(title = "", subtitle = "La línea azul representa la recta de regresión lineal. Cuanto más horizontal sea \nla línea más transversal en términos ideológicos es la posición en el dilema \nimpuestos-servicios públicos", color = "Recuerdo de voto el 26J", caption = "CIS, estudio 3146 (julio 2016)") + theme(legend.position = "bottom", plot.title = element_text(face = "bold", size = 14), plot.caption = element_text(size = 10), axis.text = element_text(size = 11)) + guides(color = guide_legend(nrow = 2))
+```
+
+
+####El dilema impuestos-servicios públicos en las CCAA
+
+<div style="text-align: justify">Como se ha defendido más arriba, en España existe un consenso sobre la preferencia a pagar más impuestos siempre que sea en favor de mejores servicios públicos. Esto es así entre el conjunto de los españoles y también en la mayoría de las comunidades autónomas.</div>
+
+<div style="text-align: justify">Sin embargo, en comunidades autónomas como La Rioja, Comunitat Valenciana, Navarra o en menor medida la Comunidad de Madrid y Castilla y León, este consenso es menos transversal en la escala ideológica. Es decir, en estas comunidades son los ciudadanos autoubicados a la izquierda los más dispuestos a pagar más impuestos si eso conlleva mejores servicios públicos, y los autoubicados a la derecha los más reacios. Las comunidades donde esta preferencia es más transversal son Andalucía, Canarias y Extremadura.</div>
+
+```{r echo=FALSE, fig.height=9, fig.width=9}
+library(tidyverse)
+
+IMPUESTOS_SSPP_CCAA <- ggplot(subset(CIS_JUL16, P17<11 & P45<11 & CCAA != "Melilla (Ciudad Autónoma de)" & CCAA != "Ceuta (Ciudad Autónoma de)"), mapping = aes(x = P45_, y = P17_))
+
+
+IMPUESTOS_SSPP_CCAA + geom_jitter(aes(color = RECUERDO_), alpha = 0.3, show.legend = FALSE) + geom_smooth(method = "lm") + facet_wrap(~CCAA) + scale_color_manual(values = coloresPARTIDOS) + geom_hline(yintercept = 5, color = "gray70") + geom_vline(xintercept = 5.5, color = "gray70") + scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9,10)) + scale_y_continuous(breaks = c(0,2,3,4,5,6,7,8,10), labels = c("Mejores servicios públicos \naunque haya más impuestos","2","3","4","5","6","7","8","Menos impuestos aunque \npeores servicios públicos")) + labs(title = "", subtitle = "Las líneas azules representan la recta de regresión lineal. Cuanto más horizontal sea \nla línea más transversal en términos ideológicos es la posición en el dilema \nimpuestos-servicios públicos", y = NULL, x = NULL, caption = "CIS, estudio 3146 (julio 2016)") + theme(axis.text = element_text(size = 8), plot.title = element_text(face = "bold", size = 14))
+
+
+```
+
+
+####Impuestos, redistribución, justicia fiscal
+<div style="text-align: justify">
+Al mismo tiempo que se prefiere mayoritariamente pagar más impuestos si eso conlleva mejores servicios públicos, hay también una amplia mayoría (63,3%) que opina que la sociedad se beneficia poco o nada de los impuestos y cotizaciones que se pagan a las administraciones. Un 86,6%, además, piensa que en España los impuestos no se cobran con justicia, esto es que no pagan más quienes más tienen. Incluso un 30% de los españoles opina que los impuestos son algo que "el Estado nos obliga a pagar sin saber muy bien a cambio de qué".</div>
+
+
+```{r Afirmaciones sobre los impuestos, echo=FALSE}
+library(tidyverse)
+library(scales)
+
+varios <- ggplot(indicadores_varios, mapping = aes(x = reorder(indicador, pct), y = pct, group = reorder(indicador, pct), fill = reorder(indicador, -pct)))
+varios + geom_col(show.legend = TRUE, color = "black") + coord_flip() + labs(title = "", x = NULL, y = NULL, fill = NULL) + scale_y_continuous(labels = percent) + geom_text(aes(label = percent(pct)), color = "white", hjust = 1.1, size = 8) + labs(caption = "CIS, estudio 3146 (julio 2016)") + theme(legend.position = "bottom", axis.text.y = element_blank(), legend.text = element_text(size = 12), plot.title = element_text(face = "bold")) + guides(fill = guide_legend(nrow = 5))
+```
+
+
+####¿Se gasta mucho o poco en los servicios públicos?
+
+<div style="text-align: justify">Nos centramos ahora en la percepción ciudadana en torno a los recursos empleados en los servicios públicos. Como se puede ver en el siguiente gráfico, las ayudas a la dependencia (67%), la sanidad (64%) y la educación (60%) son los servicios públicos que están infrafinanciados en opinión de una más de españoles. Hay pocos servicios públicos que estén sobrefinanciados en opinión de los ciudadanos. Destaca lo que tiene que ver con defensa, con un 38% de los ciudadanos que piensan que se gasta demasiado en ello.</div>
+
+```{r SSPPs, echo=FALSE, fig.width=9}
+library(tidyverse)
+library(scales)
+
+SSPP2.plot <- ggplot(SSPP2, mapping = aes(x = reorder(SSPP, -pct), y = pct, label = pctABS, fill = P16))
+
+
+SSPP2.plot + geom_bar(stat="identity") + coord_flip() + scale_y_continuous(labels = percent(c(0.5,0.25,0,0.25,0.5)), breaks = c(-0.5,-0.25,0,0.25,0.5)) + expand_limits(y = 0.5:0.5) + geom_text(size = 5, color = "white", data = subset(SSPP2, pct<0), aes(label = percent(round(pctABS, digits = 2))),hjust =-0.2) + geom_text(size = 5, data = subset(SSPP2, pct>0), aes(label = percent(round(pctABS, digits = 2)),hjust =-0.2)) + labs(fill = NULL, x = NULL, y = NULL, title = "Percepción ciudadana sobre cuántos recursos \nse dedican a los servicios públicos", subtitle = "La diferencia hasta 100 corresponde a las quienes responden 'Los justos' y 'N.S./N.C'", caption = "Fuente: CIS, estudio3146 (julio 2016)") + theme(plot.title = element_text(face = "bold"), axis.text.y = element_text(face = "bold"), legend.position = "bottom", plot.caption = element_text(size = 8))
+
+```
+
+
+
+
+####Pagar impuestos como actitud cívica
+<div style="text-align: justify">La siguiente serie histórica muestra cómo ha evolucionado la importancia de no evadir impuestos para ser considerado buen ciudadano. Desde 2002, las personas que responden con la máxima puntuación (en una escala del 0 al 10) ha aumentado notablemente (desde el 31% hasta el 57,7%). Es decir, que a día de hoy más de la mitad de los españoles considera que no evadir impuestos es una actitud cívica de máxima importancia para ser considerado buen ciudadano/a.</div>
+
+
+```{r echo=FALSE}
+library(tidyverse)
+library(scales)
+
+SERIE_IMP <- ggplot(subset(IMPORTANCIA_IMPUESTOS, escala_ != "N.S." & escala_ != "N.C."), aes(x = fecha_, y = pct, group = escala_, fill = escala_))
+
+SERIE_IMP + geom_area() + scale_y_continuous(labels = percent) + labs(title = "A la hora de considerar a alguien buen ciudadano/a, \nqué importancia le da a no evadir impuestos", subtitle = "Escala del 0 al 10 en la que 0 significa que lo considera 'nada importante' y 10 'muy importante'. \nLos porcentajes restantes hasta 100 corresponden a los N.S./N.C.", x = NULL, y = NULL, caption = "Fuente: Serie histórica CIS", fill = "Escala de valoración \ndel 0 al 10") +scale_fill_brewer(type = "div", palette = 7) + theme(legend.position = "right", plot.title = element_text(face = "bold"))
+
+```
+
+<div style="text-align: justify">Si estudiamos esta variable cruzada con la autoubicación ideológica podemos concluir que el consenso sobre la importancia de no evadir impuestos para ser considerado buen ciudadano es igual de transversal en términos ideológicos que la preferencia de pagar más impuestos a cambio de mejores servicios públicos, pero es muchísimo más rotundo (una media de 8,97 sobre 10).</div>
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+
+IDEO_FRAUDE <- ggplot(subset(CIS_JUL16, P45_<11 & P2003_<11), mapping = aes(x = P45_, y = P2003_))
+
+IDEO_FRAUDE + geom_hline(yintercept = 5, color = "gray70")+ geom_vline(xintercept = 5.5, color = "gray70") + geom_jitter(aes(color = RECUERDO_), alpha = 0.5) + geom_smooth() + scale_color_manual(values = coloresPARTIDOS) + labs(x = "Eje izquierda - derecha (1-10)", y = "Cómo de importante es no evadir impuestos \npara ser considerado buen ciudadano (0 - 10)", color = "Recuerdo de voto el 26J", caption = "CIS, estudio 3146 (julio 2016)", title = " ", subtitle = "El consenso sobre la importancia de no evadir impuestos para ser considerado \nbuen ciudadano es amplísimo y completamente transversal en términos ideológicos. \n La línea azul es un línea de regresión basado en un Modelo Aditivo Generalizado") + scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9,10)) + scale_y_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10)) + theme(plot.title = element_text(face = "bold"), axis.title.y = element_text(size = 9), axis.title.x = element_text(size = 9))
+```
+
+
+
+####Las razones para defraudar
+
+<div style="text-align: justify">A continuación podemos ver un resumen de las razones que según los españoles mueven a las personas a cometer fraude ante Hacienda. Las dos primeras razones más mencionadas se refieren a las condiciones de precariedad del mercado de trabajo: empleos con ingresos no declarados. En tercer lugar se sitúa la falta de honradez y conciencia ciudadana.</div>
+
+
+```{r echo=FALSE}
+library(tidyverse)
+library(scales)
+
+FRAUDE <- ggplot(subset(P29_, P29 < 10), mapping = aes(x = reorder(P29_, pct), y = pct))
+
+FRAUDE + geom_col() + coord_flip() + scale_y_continuous(labels = percent) + labs(title = "¿Qué razones cree Ud. que mueve a las personas \na ocultar parte o todos sus ingresos a Hacienda?", subtitle = "Se han sumado las primeras y las segundas respuestas.", caption = "Fuente: CIS, estudio 3146 (julio 2016)", x = NULL, y =  NULL)+ theme(plot.title = element_text(face = "bold"), axis.text.y = element_text(face = "bold", size = 10)) + geom_text(aes(label = percent(pct)), hjust = 1.1, color = "white", size = 5, data = subset(P29_, P29 < 10 & pct > 0.02)) + geom_text(aes(label = percent(round(pct, digits = 3))), hjust = 0, color = "black", size = 5, data = subset(P29_, P29 < 10 & pct < 0.02))
+```
+
+
