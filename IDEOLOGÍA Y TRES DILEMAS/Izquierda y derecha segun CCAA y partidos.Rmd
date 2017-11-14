@@ -1,3 +1,13 @@
+---
+title: "Los tres dilemas constitutivos del eje izquierda-derecha"
+author: "Héctor Meleiro"
+date: "14/11/2017"
+output:
+  html_document:
+    fig_caption: yes
+    fig_height: 8
+    fig_width: 10
+---
 
 
 ```{r include=FALSE}
