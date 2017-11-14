@@ -7,7 +7,7 @@ library(scales)
 library(labelled)
 
 
-CIS_26J <- read_sav("~/EDAD AGRUPADA Y RECUERDO RECOD.sav")
+CIS_26J <- read_sav("https://github.com/meneos/R_Dataviz/blob/master/IDEOLOGI%CC%81A%20Y%20TRES%20DILEMAS/EDAD%20AGRUPADA%20Y%20RECUERDO%20RECOD.sav?raw=true")
 
 ```
 
