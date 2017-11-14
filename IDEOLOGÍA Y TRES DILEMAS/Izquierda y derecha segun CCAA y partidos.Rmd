@@ -7,7 +7,7 @@ library(scales)
 library(labelled)
 
 
-CIS_26J <- read_sav("~/Dropbox/MASTER/DATOS/MATRICES/MD3145 POSTELECTORAL GENERALES 26J/EDAD AGRUPADA Y RECUERDO RECOD.sav")
+CIS_26J <- read_sav("~/EDAD AGRUPADA Y RECUERDO RECOD.sav")
 
 ```
 
