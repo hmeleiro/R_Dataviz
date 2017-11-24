@@ -15,9 +15,9 @@ library(haven)
 library(srvyr)
 library(readxl)
 
-AIRBNB <- read_excel("Dropbox/MASTER/DATOS/MATRICES/Anuncios Airbnb MAD abril 2017.xlsx")
-AIRBNB_CAT <- read_excel("Dropbox/MASTER/DATOS/OUTPUTS/EXCELS/MADRID Airbnb y vivienda.xlsx", sheet = "R sin formato")
-VIV_PROT <- read_excel("Dropbox/MASTER/DATOS/OUTPUTS/EXCELS/vivienda protegida (2006-2016).xlsx")
+AIRBNB <- read_excel("https://github.com/meneos/R_Dataviz/blob/master/AIRBNB%20MADRID/Anuncios%20Airbnb%20MAD%20abril%202017.xlsx?raw=true")
+AIRBNB_CAT <- read_excel("https://github.com/meneos/R_Dataviz/blob/master/AIRBNB%20MADRID/MADRID%20Airbnb%20y%20vivienda.xlsx?raw=true", sheet = "R sin formato")
+VIV_PROT <- read_excel("https://github.com/meneos/R_Dataviz/blob/master/AIRBNB%20MADRID/vivienda%20protegida%20(2006-2016).xlsx?raw=true")
 
 VIV_PROT_l <- gather(data = VIV_PROT, key = "Año", value = "viviendas_construidas", 2:13)
 
