@@ -1,0 +1,222 @@
+---
+title: "Airbnb y vivienda en Madrid"
+author: "Héctor Meleiro"
+date: "24/11/2017"
+output: html_document
+---
+
+##CARGAMOS LIBRERÍAS, DATOS Y CREAMOS ALGUNAS VARIABLES, ETC...
+
+```{r}
+library(labelled)
+library(tidyverse)
+library(scales)
+library(haven)
+library(srvyr)
+library(readxl)
+
+AIRBNB <- read_excel("Dropbox/MASTER/DATOS/MATRICES/Anuncios Airbnb MAD abril 2017.xlsx")
+AIRBNB_CAT <- read_excel("Dropbox/MASTER/DATOS/OUTPUTS/EXCELS/MADRID Airbnb y vivienda.xlsx", sheet = "R sin formato")
+VIV_PROT <- read_excel("Dropbox/MASTER/DATOS/OUTPUTS/EXCELS/vivienda protegida (2006-2016).xlsx")
+
+VIV_PROT_l <- gather(data = VIV_PROT, key = "Año", value = "viviendas_construidas", 2:13)
+
+VIV_PROT_l$Tipo <- factor(VIV_PROT_l$Tipo, levels = c("Propiedad", "Alquiler", "Autopromoción"))
+
+
+AIRBNB_CAT$Barrio <- gsub("(?<=^|; )([a-z])", "\\U\\1", tolower(AIRBNB_CAT$Barrio), perl = T)
+
+colnames(AIRBNB_CAT)[5] <- "ratio_sobre_airbnb_comp"
+colnames(AIRBNB_CAT)[6] <- "ratio_sobre_airbnb_tot"
+
+
+
+
+##CREAMOS VARIABLE DE PISOS POR USUARIO AGRUPADA
+attach(AIRBNB)
+AIRBNB$N_group[calculated_host_listings_count > 20] <- "Más de 20"
+AIRBNB$N_group[calculated_host_listings_count >= 10 & calculated_host_listings_count <= 20] <- "Entre 10 y 20"
+AIRBNB$N_group[calculated_host_listings_count < 10 & calculated_host_listings_count >= 2] <- "Entre 2 y 9"
+AIRBNB$N_group[calculated_host_listings_count == 1] <- "Solo 1"
+detach(AIRBNB)
+
+AIRBNB$N_group <- factor(AIRBNB$N_group, levels = c("Solo 1", "Entre 2 y 9", "Entre 10 y 20", "Más de 20"))
+
+
+##CREAMOS VARIABLE DE DISPONIBILIDAD DEL PISO MÁS O MENOS DE 90 DÍAS
+AIRBNB$MAS60[AIRBNB$availability_365 > 90] <- "Disponible más de 90 días al año"
+AIRBNB$MAS60[AIRBNB$availability_365 <= 90] <- "Disponible 90 días al año o menos"
+
+AIRBNB$MAS60 <- factor(AIRBNB$MAS60, levels = c("Disponible más de 90 días al año", "Disponible 90 días al año o menos"))
+
+
+##CREAMOS TEMA PARA LOS GRÁFICOS
+TEMA <- theme(text = element_text(family = "Roboto Condensed"),
+              plot.title = element_text(face = "bold", size = 18),
+              plot.subtitle = element_text(size = 12),
+              axis.text.x = element_text(size = 12, face = "bold"),
+              axis.title.x = element_text(margin = margin(20,0,0,0)),
+              axis.text.y = element_text(size = 10, face = "bold"),
+              legend.text = element_text(size = 11),
+              plot.caption = element_text(margin = margin(20,0,0,0)))
+
+TEMA_2 <- theme(text = element_text(family = "Roboto Condensed"),
+               plot.title = element_text(face = "bold", size = 18),
+               plot.subtitle = element_text(size = 12),
+               axis.text.x = element_text(size = 10, face = "bold"),
+               axis.title.x = element_text(margin = margin(20,0,0,0)),
+               axis.text.y = element_text(size = 10, face = "bold"),
+               legend.text = element_text(size = 11),
+               plot.caption = element_text(margin = margin(20,0,0,0)))
+
+
+```
+
+
+##TABLAS DE FRECUENCIA
+
+```{r}
+##CREAMOS TABLA DE FRECUENCIAS PARA GRÁFICO PISOS POR PERSONA
+PERSONA <- subset(AIRBNB, room_type == "Entire home/apt") %>% group_by(N_group) %>% summarize(N = n()) %>% mutate(pct = N/sum(N))
+
+
+##CREAMOS VARIABLE BOOLEAN UNO O MÁS DE UNO
+PERSONA[1, "uno"] <- "Solo uno"
+PERSONA[2:4, "uno"] <- "Más de uno"
+
+PERSONA$uno <- factor(PERSONA$uno, levels = c("Solo uno", "Más de uno"))
+
+##CREAMOS TABLA DE FRECUENCIAS PARA PISOS POR PERSONA Y DISPONIBILIDAD
+PERSONA_60 <- subset(AIRBNB, room_type == "Entire home/apt") %>% group_by(N_group, MAS60) %>% summarize(N = n()) %>% mutate(pct = N/sum(N))
+
+##CREAMOS TABLA DE FRECUENCIAS PARA TOP USUARIOS
+
+TOPUSUARIOS <- AIRBNB %>% group_by(host_name) %>% summarise(N = n())
+
+##CREAMOS TABLA DE FRECUENCIAS TOP DISTRITOS
+
+TOPDISTRITOS <- AIRBNB %>% group_by(neighbourhood_group) %>% summarise(N = n()) %>% mutate(pct = N/sum(N))
+TOPDISTRITOS <- TOPDISTRITOS[1:21,]
+
+colnames(TOPDISTRITOS)[1] <- "distrito"
+```
+
+##GRÁFICOS
+
+#CREAMOS GRÁFICO PISOS POR PERSONA
+```{r}
+#CREAMOS GRÁFICO PISOS POR PERSONA
+PERSONA_plot <- ggplot(data = PERSONA, 
+                       aes(x = uno, y = pct, fill = N_group))
+PERSONA_plot + geom_col(width = 0.6) +
+  scale_y_continuous(label = percent) +
+  labs(x = NULL, 
+       y = NULL, 
+       fill = NULL, 
+       title = "Viviendas enteras en Airbnb según cuántos anuncios tenga publicados el usuario",
+       subtitle = "El 54% de los anuncios en Airbnb están subidos por usuarios que gestionan más de una vivienda",
+       caption = "Fuente: Inside Airbnb (datos de abril 2017)     //     @hmeleiros") +
+  geom_text(mapping = aes(label = percent(pct)), family = "Roboto Condensed", size = 5, position = position_stack(vjust = 0.5), color = "black") +
+  TEMA +
+  scale_fill_manual(values = c("indianred1", "steelblue1" , "steelblue2", "steelblue3"))
+```
+
+
+#CREAMOS GRÁFICO PISOS POR PERSONA Y DISPONIBILIDAD
+
+```{r}
+#CREAMOS GRÁFICO PISOS POR PERSONA Y DISPONIBILIDAD
+PERSONA_60_plot <- ggplot(PERSONA_60, aes(x = N_group, y = pct, group = MAS60))
+PERSONA_60_plot +geom_col(aes(fill = MAS60)) + 
+  scale_y_continuous(label = percent) +
+  labs(x = "Número de viviendas anunciadas por usuario",
+       y = "% de anuncios",
+       fill = NULL,
+       title = "Viviendas enteras en Airbnb según cuántos anuncios tenga publicados \nel usuario y cuántos días al año esté disponible el anuncio",
+       subtitle = "El 54% de los anuncios en Airbnb están subidos por usuarios que gestionan más de una vivienda",
+       caption = "Fuente: Inside Airbnb (datos de abril 2017)     //     @hmeleiros") +
+  geom_text(aes(label = N), family = "Roboto Condensed", size = 5, position = position_stack(vjust = 0.5)) +
+  TEMA +
+  scale_fill_manual(values = c("indianred1","steelblue1"))
+```
+
+#GRÁFICO TOP DISTRITOS
+
+```{r}
+TOPDISTRITOS_plot <- ggplot(TOPDISTRITOS, mapping = aes(x = reorder(distrito, N), y = N))
+TOPDISTRITOS_plot + geom_col(fill = "indianred1") +
+  coord_flip() +
+  labs(x = NULL,
+       y = "Número de anuncios de viviendas enteras",
+       title = "Número de viviendas enteras anunciadas en Airbnb por distritos",
+       subtitle = "El distrito Centro concentra el 50,8% de los anuncios de Airbnb",
+       caption = "Fuente: Inside Airbnb (datos de abril 2017)     //     @hmeleiros") +
+  TEMA +
+  annotate(geom = "text", 
+           x = 19.3, 
+           y = 7100, 
+           label = "El 70,4% de los anuncios se \nconcentran en Centro, \nChamberí, Salamanca y \nArganzuela", 
+           family = "Roboto Condensed", 
+           hjust = 0) +
+  annotate(geom = "segment", x = 21.5, xend = 17, y = 6900, yend = 6900) +
+  expand_limits(y = 9100) +
+  scale_y_continuous(breaks = c(0, 1500, 3000, 4500, 6000, 7500, 9000))
+
+
+```
+
+
+#CREAMOS GRÁFICO OFERTAS AIRBNB SOBRE VIVIENDAS POR BARRIO
+
+```{r}
+#CREAMOS GRÁFICO OFERTAS AIRBNB SOBRE VIVIENDAS POR BARRIO
+
+AIRBNB_CAT_TOP <- subset(AIRBNB_CAT, ratio_sobre_airbnb_comp > 0.001)
+
+RATIOS <- ggplot(AIRBNB_CAT_TOP, mapping = aes(x = reorder(Barrio, ratio_sobre_airbnb_comp), y = ratio_sobre_airbnb_comp))
+RATIOS + geom_col(fill = "indianred1") +
+  coord_flip() +
+  scale_y_continuous(label = percent) +
+  labs(x = NULL,
+       y = "% de anuncios de viviendas enteras sobre el total de bienes inmuebles",
+       title = "Anuncios en Airbnb por inmuebles de uso residencial según barrio",
+       subtitle = "Los barrios más afectados por son Sol, Cortes (Huertas), Palacio y Justicia (Malasaña)",
+       caption = "Fuente: Inside Airbnb (datos de abril 2017) y Catastro     //     @hmeleiros") +
+  TEMA+
+  annotate(geom = "text", 
+           x = 60, 
+           y = 0.1, 
+           label = "El 16% de las viviendas \ndel barrio de Sol están \nanunciadas en Airbnb", 
+           family = "Roboto Condensed", 
+           hjust = 0) +
+  geom_curve(aes(x = 60, y = 0.137, xend = 70, yend = 0.155, colour = "curve"), data = AIRBNB_CAT_TOP, arrow = arrow(length = unit(0.02, "npc")), color = "black")
+  
+
+```
+
+#GRÁFICO VIVIENDA PROTEGIDA
+
+```{r}
+##GRÁFICO VIVIENDA PROTEGIDA
+
+VIV_PROT_plot <- ggplot(subset(VIV_PROT_l, Tipo != "Total"), 
+                        aes(x = Año, 
+                            y = viviendas_construidas, 
+                            group = Tipo))
+
+VIV_PROT_plot + geom_line(aes(color = Tipo), size = 0.8) +
+  scale_y_continuous(labels = function(x) format(x, 
+                                                 big.mark = ".", 
+                                                 decimal.mark = ",", 
+                                                 scientific = FALSE)) +
+  scale_color_brewer(type = "qual", palette = 6) + 
+  labs(title = "Calificaciones definitivas de vivienda protegida en España (2005-2016)",
+       subtitle = "Del total de la vivienda construida en España en el ciclo 2005-2016 solo el 15,2% fue vivienda protegida",
+       caption = "Fuente: Ministerio de Fomento    //    @hmeleiros",
+       x = NULL,
+       y = NULL,
+       color = NULL) +
+  TEMA_2
+```
+
+
