@@ -2,8 +2,9 @@
 title: "Airbnb y vivienda en Madrid"
 author: "Héctor Meleiro"
 date: "24/11/2017"
-output: html_document
-  theme: 
+output: 
+  html_document:
+    theme: "spacelab"
 ---
 
 ##CARGAMOS LIBRERÍAS, DATOS Y CREAMOS ALGUNAS VARIABLES, ETC...
@@ -23,8 +24,8 @@ AIRBNB <- read_excel("Anuncios Airbnb MAD abril 2017.xlsx")
 AIRBNB_CAT <- read_excel("MADRID Airbnb y vivienda.xlsx", sheet = "R sin formato")
 VIV_PROT <- read_excel("vivienda protegida (2006-2016).xlsx")
 
-
 VIV_PROT_l <- gather(data = VIV_PROT, key = "Año", value = "viviendas_construidas", 2:13)
+
 VIV_PROT_l$Tipo <- factor(VIV_PROT_l$Tipo, levels = c("Propiedad", "Alquiler", "Autopromoción"))
 
 
@@ -55,7 +56,7 @@ AIRBNB$MAS60 <- factor(AIRBNB$MAS60, levels = c("Disponible más de 90 días al 
 
 
 ##CREAMOS TEMA PARA LOS GRÁFICOS
-TEMA <- theme(text = element_text(family = "Roboto Condensed"),
+TEMA <- theme_minimal() + theme(text = element_text(family = "Roboto Condensed"),
               plot.title = element_text(face = "bold", size = 18),
               plot.subtitle = element_text(size = 12),
               axis.text.x = element_text(size = 12, face = "bold"),
@@ -64,8 +65,8 @@ TEMA <- theme(text = element_text(family = "Roboto Condensed"),
               legend.text = element_text(size = 11),
               plot.caption = element_text(margin = margin(20,0,0,0)))
 
-TEMA_2 <- theme(text = element_text(family = "Roboto Condensed"),
-               plot.title = element_text(face = "bold", size = 18),
+TEMA_2 <- theme_minimal() + theme(text = element_text(family = "Roboto Condensed"),
+               plot.title = element_text(face = "bold", size = 16),
                plot.subtitle = element_text(size = 12),
                axis.text.x = element_text(size = 10, face = "bold"),
                axis.title.x = element_text(margin = margin(20,0,0,0)),
@@ -146,7 +147,7 @@ PERSONA_60_plot +geom_col(aes(fill = MAS60)) +
 
 #GRÁFICO TOP DISTRITOS
 
-```{r}
+```{r fig.height=8, fig.width=9}
 TOPDISTRITOS_plot <- ggplot(TOPDISTRITOS, mapping = aes(x = reorder(distrito, N), y = N))
 TOPDISTRITOS_plot + geom_col(fill = "indianred1") +
   coord_flip() +
@@ -162,7 +163,7 @@ TOPDISTRITOS_plot + geom_col(fill = "indianred1") +
            label = "El 70,4% de los anuncios se \nconcentran en Centro, \nChamberí, Salamanca y \nArganzuela", 
            family = "Roboto Condensed", 
            hjust = 0) +
-  annotate(geom = "segment", x = 21.5, xend = 17, y = 6900, yend = 6900) +
+  annotate(geom = "segment", x = 21.3, xend = 17.5, y = 6900, yend = 6900) +
   expand_limits(y = 9100) +
   scale_y_continuous(breaks = c(0, 1500, 3000, 4500, 6000, 7500, 9000))
 
@@ -172,7 +173,7 @@ TOPDISTRITOS_plot + geom_col(fill = "indianred1") +
 
 #CREAMOS GRÁFICO OFERTAS AIRBNB SOBRE VIVIENDAS POR BARRIO
 
-```{r}
+```{r fig.height=10.5, fig.width=9}
 #CREAMOS GRÁFICO OFERTAS AIRBNB SOBRE VIVIENDAS POR BARRIO
 
 AIRBNB_CAT_TOP <- subset(AIRBNB_CAT, ratio_sobre_airbnb_comp > 0.001)
